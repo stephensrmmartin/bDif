@@ -1,9 +1,40 @@
+#' @import methods
+NULL
 # bDif class functions ------------------ 
 # Class creation
+#' An S4 class representing the Bayesian DIF/measurement invariance model
+#' 
+#' Inherits from stanfit
+#' @slot data The dataset provided when calling bDifFit.
+#' @slot K The number of latent groups estimated.
+#' @slot model.type The measurement model type (2PL currently supported)
+#' @slot chain.max The mcmc chain with the highest log posterior probability.
+#' @importClassesFrom rstan stanfit
+#' @export
 bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','chain.max'))
 
+#' Fit the Bayesian DIF/measurement invariance model
 #' 
-bDifFit <- function(data,measurementModel,K,order,covariateModel,model.type,method='mcmc',...){
+#' Fit the Bayesian DIF/measurement invariance model.
+#' Currently only 2PL models are supported.
+#' The model assumes that K latent groups exist between which some set of
+#' items operate differentially.
+#' The model also, currently, assumes a dichotomous state of DIF, 
+#' such that DIF either exists for some item j or not.
+#' Finally, one can predict latent group membership from known groups or other covariates.
+#' The model jointly estimates item parameters, the probability of DIF for each item, 
+#' the probability of each individual belonging to each latent group, and latent abilities.
+#' 
+#' @param data A data.frame containing the indicators and any covariates.
+#' @param measurementModel A RHS formula specifying the indicators for the latent factor.
+#' @param K The number of latent groups to estimate.
+#' @param order The item number whose difficulty (intercept) is ordered across latent groups.
+#' @param covariateModel A RHS formula specifying the concomittant predictors of latent groups.
+#' @param model.type A character string indicating the type of model to fit. Currently only accepts '2PL'
+#' @param method A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.
+#' @param ... Arguments passed to \code{\link[rstan]{stan}} or \code{\link[rstan]{vb}}
+#' @export
+bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model.type = '2PL',method = 'mcmc',...){
 	responseMatrix <- model.matrix(measurementModel,data)[,-1]
 	responseMissing <- !complete.cases(responseMatrix)
 	responseMatrix <- responseMatrix[!responseMissing,]
@@ -31,9 +62,9 @@ bDifFit <- function(data,measurementModel,K,order,covariateModel,model.type,meth
 		stop('Only 2PL is currently supported.')
 	}
 	if(method=='mcmc'){
-		stanOut <- stan(file=model_file,data = stan_data,pars=pars,...)
+		stanOut <- rstan::stan(file=model_file,data = stan_data,pars=pars,...)
 	} else if(method=='vb'){
-		stanOut <- vb(stan_model(file=model_file),data = stan_data,pars=pars,algorithm='fullrank')
+		stanOut <- rstan::vb(stan_model(file=model_file),data = stan_data,pars=pars,algorithm='fullrank')
 	}
 		
 	if(model.type == '2PL'){
@@ -44,7 +75,25 @@ bDifFit <- function(data,measurementModel,K,order,covariateModel,model.type,meth
 }
 
 #Cluster membership
+#' clusters
+#' 
+#' Generic function for extracting cluster memberships or probabilities.
+#' 
+#' @param object Object containing cluster membership.
+#' @param ... Arguments passed to object methods.
+#' @export
 setGeneric('clusters',function(object,...){standardGeneric('clusters')})
+
+#' Obtain cluster membership assignments or probabilities for each individual.
+#' 
+#' By default, \code{clusters} will return the group each individual most probably belongs to.
+#' If you want membership probabilities, change the \code{modal} argument.
+#' 
+#' @param object A bDif object returned from \code{\link{bDifOut}}.
+#' @param chains A numeric vector indicating the mcmc chain(s).
+#' @param modal Logical. Whether to return the modal group membership vector or a matrix of cluster membership probabilities.
+#' @aliases clusters.bDif
+#' @export
 setMethod('clusters',signature = c(object='bDif'),function(object,chains=object@chain.max,modal=TRUE){
 	lambdas <- summary_chains(object,chains=chains,pars=c('pi_logit'))[,1]
 	if(object@K == 2){
@@ -62,7 +111,25 @@ setMethod('clusters',signature = c(object='bDif'),function(object,chains=object@
 }
 )
 
+#' Generic Method. Obtain posterior probabilities of cluster membership
+#' 
+#' @param object Object containing cluster membership probabilities
+#' @param ... Further arguments for non-generic methods.
+#' @export
 setGeneric('posterior',function(object,...){standardGeneric('posterior')})
+
+#' Compute posterior probabilities of cluster membership.
+#' 
+#' Computes posterior probabilities in one of two ways.
+#' One (modal=FALSE) calculates the marginalized probability of cluster membership
+#' across all cases.
+#' The other (modal=TRUE) calculates the proportions of individuals in each cluster.
+#' 
+#' @param object bDif object from bDifFit.
+#' @param chains Numeric vector. Specifies which mcmc chains to use for calculation.
+#' @param modal Whether to compute posterior probabilities based on modal assignments (TRUE)
+#'   or to compute based on marginal probabilities.
+#' @aliases posterior.bDif
 setMethod('posterior','bDif',function(object,chains=object@chain.max,modal=FALSE){
 	piMatrix <- clusters(object,chains=chains,modal=FALSE)
 	if(!modal){
@@ -75,24 +142,47 @@ setMethod('posterior','bDif',function(object,chains=object@chain.max,modal=FALSE
 })
 
 #Factor scores
+#' Compute factor scores for a latent variable model.
+#' 
+#' @param object Object from a latent variable model model fit.
+#' @export
+setGeneric('factor.scores',function(object,...){standardGeneric('factor.scores')})
+
+#' Compute factor scores for cases in bDif object.
+#' 
+#' @param object bDif object from bDifFit.
+#' @param chains Numeric vector. Which mcmc chain(s) to extract from.
+#' @export
+#' @aliases factor.scores.bDif
 setMethod('factor.scores',signature='bDif',function(object,chains=object@chain.max){
 	thetas <- summary_chains(object,pars='theta',chains=chains)[,1]
 	thetas
 })
 
-#WAIC
-setMethod('waic',signature='bDif',function(x){
-	waic(extract_log_lik(x))
-})
+#' Widely applicable information criterion (WAIC)
+#' 
+#' Widely applicable information criterion (WAIC)
+#' 
+#' @param x bDif object from bDifFit.
+#' @export
+waic.bDif <- function(x){
+	loo::waic(loo::extract_log_lik(x))
+}
 
 #LOO
-setMethod('loo',signature='bDif',function(x){
-	loo(extract_log_lik(x))
-})
+#' Leave-one-out cross-validation (LOO)
+#' 
+#' Efficient approximate leave-one-out cross-validation for Bayesian models.
+#' 
+#' @param x bDif object from bDifFit.
+#' @export
+loo.bDif <- function(x){
+	loo::loo(loo::extract_log_lik(x))
+}
 
 #Log-posterior
 setGeneric('lp',def = function(object){standardGeneric('lp')})
-setMethod('lp','bDif',function(object){get_posterior_mean(object,pars=c('lp__'))})
+setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('lp__'))})
 
 #Beta summary
 summaryBetas <- function(bDif,chains=bDif@chain.max){
@@ -131,7 +221,7 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 	if(object@model.type != '2PL'){
 		stop('Function only applies to 2PL dichotomous IRT models')
 	}
-	dichoOut <- dichoDif(object@data,groups,focal.name,method = method)
+	dichoOut <- difR::dichoDif(object@data,groups,focal.name,method = method)
 	dichoOut$DIF <- cbind(dichoOut$DIF,summaryDif(object,label=TRUE,chains=chains,...))
 	dichoOut
 }
