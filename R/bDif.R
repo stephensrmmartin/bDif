@@ -1,4 +1,5 @@
 #' @import methods
+#' @useDynLib bDif
 NULL
 # bDif class functions ------------------ 
 # Class creation
@@ -32,7 +33,7 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 #' @param covariateModel A RHS formula specifying the concomittant predictors of latent groups.
 #' @param model.type A character string indicating the type of model to fit. Currently only accepts '2PL'
 #' @param method A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.
-#' @param ... Arguments passed to \code{\link[rstan]{stan}} or \code{\link[rstan]{vb}}
+#' @param ... Arguments passed to \code{\link[rstan]{sampling}} or \code{\link[rstan]{vb}}
 #' @export
 bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model.type = '2PL',method = 'mcmc',...){
 	responseMatrix <- model.matrix(measurementModel,data)[,-1]
@@ -54,17 +55,17 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 		#pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
 		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','alpha_nondif','diff_nondif')
 		if(K == 2){
-			model_file <- 'Models/difSimplex3.stan'
+			model <- stanmodels$difSimplex3
 		} else {
-			model_file <- 'Models/difSimplex2.stan'
+			model <- stanmodels$difSimplex2
 		}
 	} else {
 		stop('Only 2PL is currently supported.')
 	}
 	if(method=='mcmc'){
-		stanOut <- rstan::stan(file=model_file,data = stan_data,pars=pars,...)
+		stanOut <- rstan::sampling(object = model,data = stan_data,pars=pars,...)
 	} else if(method=='vb'){
-		stanOut <- rstan::vb(stan_model(file=model_file),data = stan_data,pars=pars,algorithm='fullrank')
+		stanOut <- rstan::vb(object = model,data = stan_data,pars=pars,algorithm='fullrank')
 	}
 		
 	if(model.type == '2PL'){
@@ -164,6 +165,7 @@ setMethod('factor.scores',signature='bDif',function(object,chains=object@chain.m
 #' Widely applicable information criterion (WAIC)
 #' 
 #' @param x bDif object from bDifFit.
+#' @importFrom loo waic
 #' @export
 waic.bDif <- function(x){
 	loo::waic(loo::extract_log_lik(x))
@@ -175,6 +177,7 @@ waic.bDif <- function(x){
 #' Efficient approximate leave-one-out cross-validation for Bayesian models.
 #' 
 #' @param x bDif object from bDifFit.
+#' @importFrom loo loo
 #' @export
 loo.bDif <- function(x){
 	loo::loo(loo::extract_log_lik(x))
@@ -217,6 +220,14 @@ summaryDif <- function(bDif,probs=c(.975,.95,.75),label=FALSE,chains=bDif@chain.
 }
 
 # Compare bDif to output from difR package
+#' Compare DIF detection with methods from difR package
+#' 
+#' @inheritParams clusters,bDif-method
+#' @param groups Vector containing group memberships. See \link[difR]{dichoDif}.
+#' @param focal.name Name of reference group. See \link[difR]{dichoDif}.
+#' @param method Character vector. Vector of DIF detection methods from the difR package. See \link[difR]{dichoDif}.
+#' @param ... Not currently used.
+#' @export
 compareMethods <- function(object,chains=object@chain.max,groups=clusters(object,modal=TRUE,chains),focal.name=1,method = c('TID','BD','Raju','MH','Logistic','Std','Lord'),...){
 	if(object@model.type != '2PL'){
 		stop('Function only applies to 2PL dichotomous IRT models')
@@ -227,6 +238,14 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 }
 
 #Coefficients; alphas, diffs, deltas, pp>50%; ltm estimates optional
+#' Obtain item parameter estimates
+#' 
+#' Obtain item parameter estimates
+#' @inheritParams clusters,bDif-method
+#' @param ltm Logical. Whether to include estimates from the ltm package.
+#' @param cut Numeric between 0 and 1. If pp>50% is greater than this value, the non-DIF item parameters
+#'   are cut and the DIF item parameters retained. If lesser than this value, the opposite.
+#' @export
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,ltm=TRUE,cut=NULL){
 	if(object@model.type == '2PL'){
 		alphas <- summary_chains(object,pars='alpha',chains=chains)[,1]
