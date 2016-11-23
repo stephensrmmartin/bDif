@@ -76,7 +76,7 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 }
 
 #Cluster membership
-#' clusters
+#' Generic function for extracting cluster memberships or probabilities.
 #' 
 #' Generic function for extracting cluster memberships or probabilities.
 #' 
@@ -274,7 +274,7 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 		rownames(itemMatrix) <- 1:nrow(diffMatrix)
 		
 		if(ltm){
-			ltmEst <- coef(ltm(object@data ~ z1,IRT.param = TRUE))[,c(2,1)]
+			ltmEst <- coef(ltm::ltm(object@data ~ z1,IRT.param = TRUE))[,c(2,1)]
 			colnames(ltmEst) <- c('alpha.ltm','diff.ltm')
 			if(!is.null(cut)){
 				ltmEst[difItems,] <- NA
