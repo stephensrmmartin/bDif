@@ -14,7 +14,7 @@ Description: A Bayesian procedure for estimating the probability of differential
 License: GPL-3
 Imports: difR,
 					loo
-Depends: rstanR,
+Depends: rstan,
 					R (>= 3.0.2),
 					Rcpp (>= 0.12.7)
 LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.12.1), BH (>= 1.60.0.2), Rcpp (>= 0.12.7), RcppEigen (>= 0.3.2.9.0)
