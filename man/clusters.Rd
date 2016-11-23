@@ -2,7 +2,7 @@
 % Please edit documentation in R/bDif.R
 \name{clusters}
 \alias{clusters}
-\title{clusters}
+\title{Generic function for extracting cluster memberships or probabilities.}
 \usage{
 clusters(object, ...)
 }

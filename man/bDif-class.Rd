@@ -11,7 +11,7 @@ Inherits from stanfit
 \section{Slots}{
 
 \describe{
-\item{\code{data}}{The dataset provided when calling bDifFit.}
+\item{\code{data}}{The response matrix implied by the measurement model.}
 
 \item{\code{K}}{The number of latent groups estimated.}
 
