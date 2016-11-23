@@ -4,7 +4,7 @@
 \alias{waic.bDif}
 \title{Widely applicable information criterion (WAIC)}
 \usage{
-waic.bDif(x)
+\method{waic}{bDif}(x)
 }
 \arguments{
 \item{x}{bDif object from bDifFit.}

@@ -4,13 +4,12 @@
 \alias{loo.bDif}
 \title{Leave-one-out cross-validation (LOO)}
 \usage{
-loo.bDif(x)
+\method{loo}{bDif}(x)
 }
 \arguments{
 \item{x}{bDif object from bDifFit.}
 }
 \description{
 Efficient approximate leave-one-out cross-validation for Bayesian models.
-See \link[loo]{loo}
 }
 

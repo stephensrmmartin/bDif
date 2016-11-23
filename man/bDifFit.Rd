@@ -22,7 +22,7 @@ bDifFit(data, measurementModel, K, order, covariateModel = ~1,
 
 \item{method}{A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.}
 
-\item{...}{Arguments passed to \code{\link[rstan]{stan}} or \code{\link[rstan]{vb}}}
+\item{...}{Arguments passed to \code{\link[rstan]{sampling}} or \code{\link[rstan]{vb}}}
 }
 \description{
 Fit the Bayesian DIF/measurement invariance model.
