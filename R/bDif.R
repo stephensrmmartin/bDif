@@ -35,6 +35,7 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 #' @param method A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.
 #' @param ... Arguments passed to \code{\link[rstan]{sampling}} or \code{\link[rstan]{vb}}
 #' @export
+#' @return bDif S4 object. See \link{bDif}
 bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model.type = '2PL',method = 'mcmc',...){
 	responseMatrix <- model.matrix(measurementModel,data)[,-1]
 	responseMissing <- !complete.cases(responseMatrix)
@@ -93,8 +94,9 @@ setGeneric('clusters',function(object,...){standardGeneric('clusters')})
 #' @param object A bDif object returned from \code{\link{bDifOut}}.
 #' @param chains A numeric vector indicating the mcmc chain(s).
 #' @param modal Logical. Whether to return the modal group membership vector or a matrix of cluster membership probabilities.
-#' @aliases clusters.bDif
 #' @export
+#' @return Either a vector of length N containing modal cluster memberships (modal=TRUE) or an NxK matrix
+#'   containing cluster membership probabilities.
 setMethod('clusters',signature = c(object='bDif'),function(object,chains=object@chain.max,modal=TRUE){
 	lambdas <- summary_chains(object,chains=chains,pars=c('pi_logit'))[,1]
 	if(object@K == 2){
@@ -130,7 +132,7 @@ setGeneric('posterior',function(object,...){standardGeneric('posterior')})
 #' @param chains Numeric vector. Specifies which mcmc chains to use for calculation.
 #' @param modal Whether to compute posterior probabilities based on modal assignments (TRUE)
 #'   or to compute based on marginal probabilities.
-#' @aliases posterior.bDif
+#' @return A vector of length K containing the posterior probabilities of each cluster or component.
 setMethod('posterior','bDif',function(object,chains=object@chain.max,modal=FALSE){
 	piMatrix <- clusters(object,chains=chains,modal=FALSE)
 	if(!modal){
@@ -154,7 +156,7 @@ setGeneric('factor.scores',function(object,...){standardGeneric('factor.scores')
 #' @param object bDif object from bDifFit.
 #' @param chains Numeric vector. Which mcmc chain(s) to extract from.
 #' @export
-#' @aliases factor.scores.bDif
+#' @return A vector of length N containing the posterior mean estimates of latent ability.
 setMethod('factor.scores',signature='bDif',function(object,chains=object@chain.max){
 	thetas <- summary_chains(object,pars='theta',chains=chains)[,1]
 	thetas
@@ -228,6 +230,7 @@ summaryDif <- function(bDif,probs=c(.975,.95,.75),label=FALSE,chains=bDif@chain.
 #' @param method Character vector. Vector of DIF detection methods from the difR package. See \link[difR]{dichoDif}.
 #' @param ... Not currently used.
 #' @export
+#' @return A dichoDif object. See \link[difR]{dichoDif}
 compareMethods <- function(object,chains=object@chain.max,groups=clusters(object,modal=TRUE,chains),focal.name=1,method = c('TID','BD','Raju','MH','Logistic','Std','Lord'),...){
 	if(object@model.type != '2PL'){
 		stop('Function only applies to 2PL dichotomous IRT models')

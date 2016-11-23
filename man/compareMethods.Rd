@@ -21,6 +21,9 @@ compareMethods(object, chains = object@chain.max, groups = clusters(object,
 
 \item{...}{Not currently used.}
 }
+\value{
+A dichoDif object. See \link[difR]{dichoDif}
+}
 \description{
 Compare DIF detection with methods from difR package
 }

@@ -3,7 +3,6 @@
 \docType{methods}
 \name{factor.scores,bDif-method}
 \alias{factor.scores,bDif-method}
-\alias{factor.scores.bDif}
 \title{Compute factor scores for cases in bDif object.}
 \usage{
 \S4method{factor.scores}{bDif}(object, chains = object@chain.max)
@@ -12,6 +11,9 @@
 \item{object}{bDif object from bDifFit.}
 
 \item{chains}{Numeric vector. Which mcmc chain(s) to extract from.}
+}
+\value{
+A vector of length N containing the posterior mean estimates of latent ability.
 }
 \description{
 Compute factor scores for cases in bDif object.

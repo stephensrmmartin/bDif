@@ -24,6 +24,9 @@ bDifFit(data, measurementModel, K, order, covariateModel = ~1,
 
 \item{...}{Arguments passed to \code{\link[rstan]{sampling}} or \code{\link[rstan]{vb}}}
 }
+\value{
+bDif S4 object. See \link{bDif}
+}
 \description{
 Fit the Bayesian DIF/measurement invariance model.
 Currently only 2PL models are supported.

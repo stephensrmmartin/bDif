@@ -3,7 +3,6 @@
 \docType{methods}
 \name{posterior,bDif-method}
 \alias{posterior,bDif-method}
-\alias{posterior.bDif}
 \title{Compute posterior probabilities of cluster membership.}
 \usage{
 \S4method{posterior}{bDif}(object, chains = object@chain.max, modal = FALSE)
@@ -15,6 +14,9 @@
 
 \item{modal}{Whether to compute posterior probabilities based on modal assignments (TRUE)
 or to compute based on marginal probabilities.}
+}
+\value{
+A vector of length K containing the posterior probabilities of each cluster or component.
 }
 \description{
 Computes posterior probabilities in one of two ways.

@@ -3,7 +3,6 @@
 \docType{methods}
 \name{clusters,bDif-method}
 \alias{clusters,bDif-method}
-\alias{clusters.bDif}
 \title{Obtain cluster membership assignments or probabilities for each individual.}
 \usage{
 \S4method{clusters}{bDif}(object, chains = object@chain.max, modal = TRUE)
@@ -14,6 +13,10 @@
 \item{chains}{A numeric vector indicating the mcmc chain(s).}
 
 \item{modal}{Logical. Whether to return the modal group membership vector or a matrix of cluster membership probabilities.}
+}
+\value{
+Either a vector of length N containing modal cluster memberships (modal=TRUE) or an NxK matrix
+  containing cluster membership probabilities.
 }
 \description{
 By default, \code{clusters} will return the group each individual most probably belongs to.
