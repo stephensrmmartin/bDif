@@ -6,7 +6,7 @@ NULL
 #' An S4 class representing the Bayesian DIF/measurement invariance model
 #' 
 #' Inherits from stanfit
-#' @slot data The dataset provided when calling bDifFit.
+#' @slot data The response matrix implied by the measurement model.
 #' @slot K The number of latent groups estimated.
 #' @slot model.type The measurement model type (2PL currently supported)
 #' @slot chain.max The mcmc chain with the highest log posterior probability.
