@@ -11,7 +11,6 @@ NULL
 #' @slot K The number of latent groups estimated.
 #' @slot model.type The measurement model type (2PL currently supported)
 #' @slot chain.max The mcmc chain with the highest log posterior probability.
-#' @importClassesFrom rstan stanfit
 #' @export
 bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','chain.max'))
 
