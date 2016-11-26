@@ -76,8 +76,8 @@ model{
 	//likelihood -- \delta_j per person
 	for(j in 1:J){
 		for(n in 1:N){
-			//lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + bernoulli_logit_lpmf(y[n,j] | alpha[1,j]*(theta[n] - diff[1,j]));
-			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + bernoulli_logit_lpmf(y[n,j] | alpha_nondif[j]*(theta[n] - diff_nondif[j]));
+			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + bernoulli_logit_lpmf(y[n,j] | alpha[1,j]*(theta[n] - diff[1,j]));
+			//lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + bernoulli_logit_lpmf(y[n,j] | alpha_nondif[j]*(theta[n] - diff_nondif[j]));
 			lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + bernoulli_logit_lpmf(y[n,j] | alpha[1,j]*(theta[n] - diff[1,j]));
 			lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + bernoulli_logit_lpmf(y[n,j] | alpha[2,j]*(theta[n] - diff[2,j]));
 			lp_jnd[j,n,2] = log_inv_logit(delta_logit[j]) + log_sum_exp(lp_jndk[j,n]);
