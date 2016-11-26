@@ -1,6 +1,8 @@
 #' @import methods
+#' @import Rcpp
 #' @useDynLib bDif, .registration=TRUE
 NULL
+
 # bDif class functions ------------------ 
 # Class creation
 #' An S4 class representing the Bayesian DIF/measurement invariance model
