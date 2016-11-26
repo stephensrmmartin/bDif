@@ -3,19 +3,25 @@ Type: Package
 Title: Estimate DIF or measurement invariance across (predicted) latent groups.
 Version: 0.0.0.9999
 Date: 2016-11-22
-Authors@R:  person('Stephen', 'Martin', email = 'stephenSRMMartin@gmail.com', role=c('aut','cre'))
-Description: A Bayesian procedure for estimating the probability of differential item functioning
-		(DIF) or measurement invariance across latent unknown groups. Unlike most DIF procedures that
-		compare item parameters across known groups, the bDif procedure provided uses mixture modeling
-		and latent group assignment to simultaneously detect DIF probabilities for each item,
-		non-DIF and DIF item parameters,latent abilities, and latent group membership probabilities.
-		Moreover, one can predict	latent group membership from covariates to better understand
-		the makeup of the latent groups for which some items seem to operate differentially.
+Authors@R: person('Stephen', 'Martin', email = 'stephenSRMMartin@gmail.com', role=c('aut','cre'))
+Description: A Bayesian procedure for estimating the probability of differential
+    item functioning (DIF) or measurement invariance across latent unknown groups.
+    Unlike most DIF procedures that compare item parameters across known groups,
+    the bDif procedure provided uses mixture modeling and latent group assignment
+    to simultaneously detect DIF probabilities for each item, non-DIF and DIF
+    item parameters,latent abilities, and latent group membership probabilities.
+    Moreover, one can predict latent group membership from covariates to better
+    understand the makeup of the latent groups for which some items seem to operate
+    differentially.
 License: GPL-3
-Imports: difR,
-					loo
-Depends: methods,
-					rstan,
-					R (>= 3.0.2),
-					Rcpp (>= 0.12.7)
-LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.12.1), BH (>= 1.60.0.2), Rcpp (>= 0.12.7), RcppEigen (>= 0.3.2.9.0)
+Imports:
+    difR,
+    loo
+Depends:
+    methods,
+    rstan,
+    R (>= 3.0.2),
+    Rcpp (>= 0.12.7)
+LinkingTo: StanHeaders (>= 2.12.0), rstan (>= 2.12.1), BH (>= 1.60.0.2), Rcpp
+    (>= 0.12.7), RcppEigen (>= 0.3.2.9.0)
+RoxygenNote: 5.0.1
