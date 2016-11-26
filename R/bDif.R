@@ -40,12 +40,16 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	responseMatrix <- model.matrix(measurementModel,data)[,-1]
 	responseMissing <- !complete.cases(responseMatrix)
 	responseMatrix <- responseMatrix[!responseMissing,]
-	warning('Removing ',sum(responseMissing),' cases missing response data.')
+	if(sum(responseMissing)>0){
+		warning('Removing ',sum(responseMissing),' cases missing response data.')
+	}
 	
 	covariateMatrix <- model.matrix(covariateModel,data)
 	covariateMissing <- !complete.cases(covariateMatrix)
 	covariateMatrix <- covariateMatrix[!covariateMissing,,drop=FALSE]
-	warning('Removing ',sum(covariateMissing),' cases missing covariate data.')
+	if(sum(covariateMissing)>0){
+		warning('Removing ',sum(covariateMissing),' cases missing covariate data.')
+	}
 	
 	N <- nrow(responseMatrix)
 	L <- ncol(covariateMatrix)
