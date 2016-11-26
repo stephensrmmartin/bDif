@@ -61,7 +61,7 @@ transformed parameters{
 	//Pi_logit conversion
 	for(n in 1:N){
 		pi_logit[n,1] = 0;
-		pi_logit[n,2:K] = pi_logit_s[n] + (covariates[n]*betas_logit[1:L,2:K])';
+		pi_logit[n,2:K] = pi_logit_s[n]*3 + (covariates[n]*betas_logit[1:L,2:K])';
 		pi[n] = log_softmax(pi_logit[n]);
 	}
 	
@@ -97,7 +97,8 @@ model {
 	//Likelihood
 	for(j in 1:J){
 		for(n in 1:N){
-			lp_jnd[j,n,1] = delta[j,1] + bernoulli_logit_lpmf(y[n,j] | alpha_nondif[j]*(theta[n] - diff_nondif[j]));
+			//lp_jnd[j,n,1] = delta[j,1] + bernoulli_logit_lpmf(y[n,j] | alpha_nondif[j]*(theta[n] - diff_nondif[j]));
+			lp_jnd[j,n,1] = delta[j,1] + bernoulli_logit_lpmf(y[n,j] | alpha[1,j]*(theta[n] - diff[1,j]));
 			for(k in 1:K){
 				lp_jndk[j,n,k] = pi[n,k] + bernoulli_logit_lpmf(y[n,j] | alpha[k,j]*(theta[n] - diff[k,j]));
 			}
