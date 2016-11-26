@@ -1,5 +1,5 @@
 #' @import methods
-#' @useDynLib bDif
+#' @useDynLib bDif, .registration=TRUE
 NULL
 # bDif class functions ------------------ 
 # Class creation
