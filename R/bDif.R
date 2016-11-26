@@ -1,4 +1,3 @@
-#' @import methods
 #' @import Rcpp
 #' @import rstan
 #' @useDynLib bDif, .registration = TRUE
