@@ -53,8 +53,7 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	
 	stan_data <- list(y=responseMatrix,covariates=covariateMatrix,K=K,jOrder=order,L=L,N=N,J=J)
 	if(model.type == '2PL'){
-		#pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
-		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','alpha_nondif','diff_nondif')
+		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit')
 		if(K == 2){
 			model <- stanmodels$difSimplex3
 		} else {

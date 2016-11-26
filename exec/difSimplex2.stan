@@ -15,10 +15,8 @@ transformed data{
 parameters {
 	//Item parameters
 	vector<lower=0>[J] alpha[K];
-	vector<lower=0>[J] alpha_nondif;
 	vector[J-1] diff_base[K];
 	ordered[K] diff_ordered;
-	vector[J] diff_nondif;
 	vector[J] delta_logit_s;
 	//Person parameters
 	vector[N] theta;
@@ -79,8 +77,6 @@ model {
 		diff_base[k] ~ normal(0,1);
 		alpha[k] ~ normal(0,1);
 	}
-	alpha_nondif ~ normal(0,1);
-	diff_nondif ~ normal(0,1);
 	diff_ordered ~ normal(0,1);
 	delta_logit_s ~ logistic(0,1);
 	
