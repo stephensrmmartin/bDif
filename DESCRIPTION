@@ -18,7 +18,6 @@ Imports:
     difR,
     loo
 Depends:
-    methods,
     rstan,
     R (>= 3.0.2),
     Rcpp (>= 0.12.7)

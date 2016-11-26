@@ -1,4 +1,3 @@
-#' @import methods
 #' @import Rcpp
 #' @useDynLib bDif, .registration=TRUE
 NULL
