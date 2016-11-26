@@ -257,8 +257,8 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 		difTable <- summaryDif(object,chains=chains)
 		deltaMatrix <- difTable[,c('Delta','pp>50%')]
 		## Non-dif model technique
-		alpha_nondifs <- summary_chains(object,pars='alpha_nondif',chains=chains)[,1]
-		diff_nondifs <- summary_chains(object,pars='diff_nondif',chains=chains)[,1]
+		#alpha_nondifs <- summary_chains(object,pars='alpha_nondif',chains=chains)[,1]
+		#diff_nondifs <- summary_chains(object,pars='diff_nondif',chains=chains)[,1]
 		
 		alphaMatrix <- matrix(alphas,byrow=TRUE,ncol=object@K)
 		colnames(alphaMatrix) <- paste0('alpha.',1:object@K)
@@ -266,15 +266,19 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 		diffMatrix <- matrix(diffs,byrow=TRUE,ncol=object@K)
 		colnames(diffMatrix) <- paste0('diff.',1:object@K)
 		
-		#itemMatrix <- cbind(alphaMatrix,diffMatrix,deltaMatrix)
 		if(!is.null(cut)){
 			difItems <- deltaMatrix[,'pp>50%'] >= cut
-			alphaMatrix[!difItems,] <- NA
-			diffMatrix[!difItems,] <- NA
-			alpha_nondifs[difItems] <- NA
-			diff_nondifs[difItems] <- NA
+			## If using non-dif formulation, uncomment.
+			#alphaMatrix[!difItems,] <- NA
+			#diffMatrix[!difItems,] <- NA
+			#alpha_nondifs[difItems] <- NA
+			#diff_nondifs[difItems] <- NA
+			alphaMatrix[!difItems,2:object@K] <- NA
+			diffMatrix[!difItems,2:object@K] <- NA
 		}
-		itemMatrix <- cbind(alphaMatrix,'alpha..'=alpha_nondifs,diffMatrix,'diff..'=diff_nondifs,deltaMatrix)
+		##If using non-dif formulation, uncomment
+		#itemMatrix <- cbind(alphaMatrix,'alpha..'=alpha_nondifs,diffMatrix,'diff..'=diff_nondifs,deltaMatrix)
+		itemMatrix <- cbind(alphaMatrix,diffMatrix,deltaMatrix)
 		rownames(itemMatrix) <- 1:nrow(diffMatrix)
 		
 		if(ltm){
