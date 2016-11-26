@@ -249,11 +249,12 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #' @param cut Numeric between 0 and 1. If pp>50% is greater than this value, the non-DIF item parameters
 #'   are cut and the DIF item parameters retained. If lesser than this value, the opposite.
 #' @export
+#' @import ltm
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,ltm=TRUE,cut=NULL){
 	if(object@model.type == '2PL'){
 		alphas <- summary_chains(object,pars='alpha',chains=chains)[,1]
 		diffs <- summary_chains(object,pars='diff',chains=chains)[,1]
-		difTable <- summaryDif(object)
+		difTable <- summaryDif(object,chains=chains)
 		deltaMatrix <- difTable[,c('Delta','pp>50%')]
 		## Non-dif model technique
 		alpha_nondifs <- summary_chains(object,pars='alpha_nondif',chains=chains)[,1]
