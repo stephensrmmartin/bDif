@@ -57,7 +57,7 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	
 	stan_data <- list(y=responseMatrix,covariates=covariateMatrix,K=K,jOrder=order,L=L,N=N,J=J)
 	if(model.type == '2PL'){
-		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit')
+		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
 		if(K == 2){
 			model <- stanmodels$difSimplex3
 		} else {
@@ -194,7 +194,7 @@ setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('
 
 #Beta summary
 summaryBetas <- function(bDif,chains=bDif@chain.max){
-	betasSum <- summary_chains(bDif,chains=chains,pars=c('betas_logit','pi_sigma'))
+	betasSum <- summary_chains(bDif,chains=chains,pars='betas_logit')
 	betasSum
 }
 #Dif table ala dichoDif, or Dif decision probability, Delta, and ppDelta>50%
