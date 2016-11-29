@@ -262,6 +262,7 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #'   are cut and the DIF item parameters retained. If lesser than this value, the opposite.
 #' @export
 #' @import ltm
+#' @import lavaan
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	if(object@model.type == '2PL'){
 		alphas <- summary_chains(object,pars='alpha',chains=chains)[,1]
