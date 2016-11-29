@@ -9,7 +9,7 @@ NULL
 #' Inherits from stanfit
 #' @slot data The response matrix implied by the measurement model.
 #' @slot K The number of latent groups estimated.
-#' @slot model.type The measurement model type (2PL currently supported)
+#' @slot model.type The measurement model type (2PL and CFA currently supported)
 #' @slot chain.max The mcmc chain with the highest log posterior probability.
 #' @export
 bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','chain.max'))
@@ -17,7 +17,6 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 #' Fit the Bayesian DIF/measurement invariance model
 #' 
 #' Fit the Bayesian DIF/measurement invariance model.
-#' Currently only 2PL models are supported.
 #' The model assumes that K latent groups exist between which some set of
 #' items operate differentially.
 #' The model also, currently, assumes a dichotomous state of DIF, 
@@ -31,7 +30,7 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 #' @param K The number of latent groups to estimate.
 #' @param order The item number whose difficulty (intercept) is ordered across latent groups.
 #' @param covariateModel A RHS formula specifying the concomittant predictors of latent groups.
-#' @param model.type A character string indicating the type of model to fit. Currently only accepts '2PL'
+#' @param model.type A character string indicating the type of model to fit, either '2PL' or 'CFA'
 #' @param method A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.
 #' @param ... Arguments passed to \code{\link[rstan]{sampling}} or \code{\link[rstan]{vb}}
 #' @export
@@ -39,14 +38,16 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model.type = '2PL',method = 'mcmc',...){
 	responseMatrix <- model.matrix(measurementModel,data)[,-1]
 	responseMissing <- !complete.cases(responseMatrix)
-	responseMatrix <- responseMatrix[!responseMissing,]
+	
+	covariateMatrix <- model.matrix(covariateModel,data)
+	covariateMissing <- !complete.cases(covariateMatrix)
+	
+	responseMatrix <- responseMatrix[!responseMissing & !covariateMissing,,drop=FALSE]
 	if(sum(responseMissing)>0){
 		warning('Removing ',sum(responseMissing),' cases missing response data.')
 	}
 	
-	covariateMatrix <- model.matrix(covariateModel,data)
-	covariateMissing <- !complete.cases(covariateMatrix)
-	covariateMatrix <- covariateMatrix[!covariateMissing,,drop=FALSE]
+	covariateMatrix <- covariateMatrix[!covariateMissing & !responseMissing,,drop=FALSE]
 	if(sum(covariateMissing)>0){
 		warning('Removing ',sum(covariateMissing),' cases missing covariate data.')
 	}
@@ -56,6 +57,7 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	J <- ncol(responseMatrix)
 	
 	stan_data <- list(y=responseMatrix,covariates=covariateMatrix,K=K,jOrder=order,L=L,N=N,J=J)
+	
 	if(model.type == '2PL'){
 		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
 		if(K == 2){
@@ -63,18 +65,25 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 		} else {
 			model <- stanmodels$dif2PLK3
 		}
+	} else if (model.type == 'CFA'){
+		pars <- c('lambda','intercept','delta_logit','pi_logit','theta','betas_logit')
+		if(K == 2){
+			model <- stanmodels$difCFAK2
+		} else {
+			stop('K=2 only supported currently for CFA')
+			#model <- stanmodels$difCFAK3
+		}
 	} else {
-		stop('Only 2PL is currently supported.')
+		stop('model.type must be one of 2PL or CFA')
 	}
+	
 	if(method=='mcmc'){
 		stanOut <- rstan::sampling(object = model,data = stan_data,pars=pars,...)
 	} else if(method=='vb'){
-		stanOut <- rstan::vb(object = model,data = stan_data,pars=pars,algorithm='fullrank')
+		stanOut <- rstan::vb(object = model,data = stan_data,pars=pars,algorithm='fullrank',...)
 	}
 		
-	if(model.type == '2PL'){
-		bDifOut <- bDif(stanOut,K=K,model.type=model.type,data=responseMatrix,chain.max=which.max(get_posterior_mean(stanOut,pars='lp__')))
-	} 
+	bDifOut <- bDif(stanOut,K=K,model.type=model.type,data=responseMatrix,chain.max=which.max(get_posterior_mean(stanOut,pars='lp__')))
 	
 	bDifOut
 }
@@ -248,12 +257,12 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #' 
 #' Obtain item parameter estimates
 #' @inheritParams clusters,bDif-method
-#' @param ltm Logical. Whether to include estimates from the ltm package.
+#' @param include Logical. Whether to include estimates from ltm (model.type=2PL) or lavaan (model.type=CFA)
 #' @param cut Numeric between 0 and 1. If pp>50% is greater than this value, the non-DIF item parameters
 #'   are cut and the DIF item parameters retained. If lesser than this value, the opposite.
 #' @export
 #' @import ltm
-setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,ltm=TRUE,cut=NULL){
+setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	if(object@model.type == '2PL'){
 		alphas <- summary_chains(object,pars='alpha',chains=chains)[,1]
 		diffs <- summary_chains(object,pars='diff',chains=chains)[,1]
@@ -284,7 +293,7 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 		itemMatrix <- cbind(alphaMatrix,diffMatrix,deltaMatrix)
 		rownames(itemMatrix) <- 1:nrow(diffMatrix)
 		
-		if(ltm){
+		if(include){
 			ltmEst <- coef(ltm::ltm(object@data ~ z1,IRT.param = TRUE))[,c(2,1)]
 			colnames(ltmEst) <- c('alpha.ltm','diff.ltm')
 			if(!is.null(cut)){

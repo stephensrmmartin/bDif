@@ -5,7 +5,7 @@
 \alias{coef,bDif-method}
 \title{Obtain item parameter estimates}
 \usage{
-\S4method{coef}{bDif}(object, chains = object@chain.max, ltm = TRUE,
+\S4method{coef}{bDif}(object, chains = object@chain.max, include = TRUE,
   cut = NULL)
 }
 \arguments{
@@ -13,7 +13,7 @@
 
 \item{chains}{A numeric vector indicating the mcmc chain(s).}
 
-\item{ltm}{Logical. Whether to include estimates from the ltm package.}
+\item{include}{Logical. Whether to include estimates from ltm (model.type=2PL) or lavaan (model.type=CFA)}
 
 \item{cut}{Numeric between 0 and 1. If pp>50% is greater than this value, the non-DIF item parameters
 are cut and the DIF item parameters retained. If lesser than this value, the opposite.}

@@ -15,7 +15,7 @@ Inherits from stanfit
 
 \item{\code{K}}{The number of latent groups estimated.}
 
-\item{\code{model.type}}{The measurement model type (2PL currently supported)}
+\item{\code{model.type}}{The measurement model type (2PL and CFA currently supported)}
 
 \item{\code{chain.max}}{The mcmc chain with the highest log posterior probability.}
 }}

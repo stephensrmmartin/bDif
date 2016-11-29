@@ -18,7 +18,7 @@ bDifFit(data, measurementModel, K, order, covariateModel = ~1,
 
 \item{covariateModel}{A RHS formula specifying the concomittant predictors of latent groups.}
 
-\item{model.type}{A character string indicating the type of model to fit. Currently only accepts '2PL'}
+\item{model.type}{A character string indicating the type of model to fit, either '2PL' or 'CFA'}
 
 \item{method}{A character string indicating whether to use MCMC ('mcmc') or variational Bayes ('vb'). 'mcmc' is recommended.}
 
@@ -29,7 +29,6 @@ bDif S4 object. See \link{bDif}
 }
 \description{
 Fit the Bayesian DIF/measurement invariance model.
-Currently only 2PL models are supported.
 The model assumes that K latent groups exist between which some set of
 items operate differentially.
 The model also, currently, assumes a dichotomous state of DIF, 
