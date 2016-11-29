@@ -292,7 +292,7 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 		##If using non-dif formulation, uncomment
 		#itemMatrix <- cbind(alphaMatrix,'alpha..'=alpha_nondifs,diffMatrix,'diff..'=diff_nondifs,deltaMatrix)
 		itemMatrix <- cbind(alphaMatrix,diffMatrix,deltaMatrix)
-		rownames(itemMatrix) <- 1:nrow(diffMatrix)
+		rownames(itemMatrix) <- colnames(object@data)
 		
 		if(include){
 			ltmEst <- coef(ltm::ltm(object@data ~ z1,IRT.param = TRUE))[,c(2,1)]
@@ -306,3 +306,43 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 	} else {stop('Only 2PL models currently supported.')}
 }
 )
+
+coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
+	intercept = summary_chains(object,chains=chains,pars='intercept')[,1]
+	lambda = summary_chains(object,chains=chains,pars='lambda')[,1]
+	residual = summary_chains(object,chains=chains,pars='residual')[,1]
+	
+	#Intercept matrix
+	interceptMatrix <- matrix(intercept,byrow=TRUE,ncol=object@K)
+	colnames(interceptMatrix) <- paste0('int.',1:object@K)
+	
+	#Loading matrix
+	lambdaMatrix <- matrix(lambda,byrow=TRUE,ncol=object@K)
+	colnames(lambdaMatrix) <- paste0('lam.',1:object@K)
+	
+	#Residual matrix
+	residualMatrix <- matrix(residual,byrow=TRUE,ncol=object@K)
+	colnames(residualMatrix) <- paste0('res.',1:object@K)
+	
+	#Delta matrix
+	deltaMatrix <- summaryDif(object,chains=chains)[,c('Delta','pp>50%')]
+	
+	itemMatrix <- cbind(interceptMatrix,lambdaMatrix,residualMatrix)
+	rownames(itemMatrix) <- colnames(d)
+	
+	## lavaan estimates
+	if(include){
+		d <- as.data.frame(object@data)
+		varnames <- names(d)
+		lavRHS <- paste(varnames,collapse = ' + ')
+		lavModel <- paste0('f1 =~ ', lavRHS)
+		lavOut <- cfa(data=d, model = lavModel, std.lv = TRUE)
+		lavTab <- parameterEstimates(lavOut)
+		lavIntercept <- lavTab[lavTab[,2] == '~1','est']
+		lavLoading <- lavTab[lavTab[,2] == '=~','est']
+		lavResidual <- lavTab[lavTab[,2] == '~~' & lavTab[,1] == lavTab[,3], 'est']
+		lavMatrix <- cbind('int.lav' = lavIntercept, 'lam.lav' = lavLoading,'res.lav' = lavResidual)
+		itemMatrix <- cbind(itemMatrix, lavMatrix)
+	}
+	
+}
