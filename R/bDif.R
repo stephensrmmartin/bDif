@@ -59,9 +59,9 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	if(model.type == '2PL'){
 		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
 		if(K == 2){
-			model <- stanmodels$difSimplex3
+			model <- stanmodels$dif2PLK2
 		} else {
-			model <- stanmodels$difSimplex2
+			model <- stanmodels$dif2PLK3
 		}
 	} else {
 		stop('Only 2PL is currently supported.')
