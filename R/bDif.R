@@ -221,6 +221,8 @@ setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('
 #' \item residual
 #' }
 #' If NULL, specifying the parameters manually is recommended (e.g., pars = 'theta').
+#' @return If chains is unspecified, returns output from \link[rstan]{summary,stanfit-method}.
+#' If chains are specified, returns output from \link[rstan]{monitor}, a summary over the chains specified.
 setMethod('summary', signature = 'bDif', function(object, what = NULL, chains = NULL, ...){
 	if(is.null(what)){
 		if(is.null(chains)){
@@ -241,9 +243,10 @@ setMethod('summary', signature = 'bDif', function(object, what = NULL, chains = 
 					 'residual' = pars <- 'residual'
 					 )
 		if(is.null(chains)){
-			rstan::summary(object,pars=pars, ...)
+			callNextMethod(object, pars = pars, ...)
 		} else {
-			summary_chains(object, chains = chains, pars=pars, ...)
+			sum <- summary_chains(object, chains = chains, pars=pars, ...)
+			return(sum)
 		}
 	}
 })
