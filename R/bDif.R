@@ -278,7 +278,8 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	switch(object@model.type,
 		'2PL' = coef.2pl(object,chains,include,cut),
-		'CFA' = coef.cfa(object,chains,include,cut)
+		'CFA' = coef.cfa(object,chains,include,cut),
+		stop('model.type must be one of 2PL or CFA')
 	)
 }
 )
