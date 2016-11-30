@@ -251,9 +251,10 @@ setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('
 setMethod('summary', signature = 'bDif', function(object, what = NULL, chains = NULL, ...){
 	if(is.null(what)){
 		if(is.null(chains)){
-			callNextMethod(object, ...)
+			return(callNextMethod(object, ...))
 		} else{
-			summary_chains(object, chains = chains, ...)
+			sum <- summary_chains(object, chains = chains, ...)
+			return(sum)
 		}
 	}
 	
@@ -268,7 +269,7 @@ setMethod('summary', signature = 'bDif', function(object, what = NULL, chains = 
 					 'residual' = pars <- 'residual'
 					 )
 		if(is.null(chains)){
-			callNextMethod(object, pars = pars, ...)
+			callNextMethod(object, pars = pars,...)
 		} else {
 			sum <- summary_chains(object, chains = chains, pars=pars, ...)
 			return(sum)
