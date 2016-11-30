@@ -334,8 +334,8 @@ coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	#Delta matrix
 	deltaMatrix <- summaryDif(object,chains=chains)[,c('Delta','pp>50%')]
 	
-	itemMatrix <- cbind(interceptMatrix,lambdaMatrix,residualMatrix)
-	rownames(itemMatrix) <- colnames(d)
+	itemMatrix <- cbind(interceptMatrix,lambdaMatrix,residualMatrix,deltaMatrix)
+	rownames(itemMatrix) <- colnames(object@data)
 	
 	## lavaan estimates
 	if(include){
