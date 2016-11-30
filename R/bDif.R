@@ -66,7 +66,7 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 			model <- stanmodels$dif2PLK3
 		}
 	} else if (model.type == 'CFA'){
-		pars <- c('lambda','intercept','residual','delta_logit','pi_logit','theta','betas_logit')
+		pars <- c('lambda','intercept','residual','delta_logit','pi_logit','theta','betas_logit','log_lik')
 		if(K == 2){
 			model <- stanmodels$difCFAK2
 		} else {

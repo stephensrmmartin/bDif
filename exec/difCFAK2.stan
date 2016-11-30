@@ -21,7 +21,6 @@ parameters {
 	vector[J-1] intercept_base[K];
 	ordered[K] intercept_ordered;
 	vector<lower=0>[J] lambda[K];
-	//vector<lower=0>[J] residual; //Constrain residual across groups
 	vector<lower=0>[J] residual[K];
 	vector[J] delta_logit_s;
 	
@@ -75,7 +74,6 @@ model {
 		residual[k] ~ cauchy(0,1);
 	}
 	delta_logit_s ~ logistic(0,1);
-//	residual ~ cauchy(0,1); //Constrained residual
 	//Person priors
 	theta ~ normal(0,1);
 	pi_logit_s ~ logistic(0,1);
@@ -88,9 +86,6 @@ model {
 			for(k in 1:K){
 				yhat[j,n,k] = intercept[k,j] + lambda[k,j]*theta[n];
 			}
-			//lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[j]);
-			//lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[j]);
-			//lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,2], residual[j]);
 			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
 			lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
 			lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,2], residual[2,j]);
@@ -104,5 +99,25 @@ model {
 }
 
 generated quantities {
+	vector[K] yhat[J,N];
+	vector[2] lp_jnd[J,N];
+	vector[2] lp_jndk[J,N];
+	vector[N] lp_jn[J];
+	vector[N] log_lik;
+	for(j in 1:J){
+		for(n in 1:N){
+			for(k in 1:K){
+				yhat[j,n,k] = intercept[k,j] + lambda[k,j]*theta[n];
+			}
+			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
+			lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
+			lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,2], residual[2,j]);
+			lp_jnd[j,n,2] = log_inv_logit(delta_logit[j]) + log_sum_exp(lp_jndk[j,n]);
+			lp_jn[j,n] = log_sum_exp(lp_jnd[j,n]);
+		}
+	}
+	for(n in 1:N){
+		log_lik[n] = sum(lp_jn[1:J,n]);
+	}
 	
 }
