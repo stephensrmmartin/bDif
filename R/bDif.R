@@ -265,6 +265,14 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #' @import lavaan
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	if(object@model.type == '2PL'){
+		coef.2pl(object,chains,include,cut)
+	} else if(object@model.type == 'CFA'){
+		coef.cfa(object,chains,include,cut)
+	}
+}
+)
+
+coef.2pl <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		alphas <- summary_chains(object,pars='alpha',chains=chains)[,1]
 		diffs <- summary_chains(object,pars='diff',chains=chains)[,1]
 		difTable <- summaryDif(object,chains=chains)
@@ -303,9 +311,8 @@ setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chai
 			itemMatrix <- cbind(itemMatrix,ltmEst)
 		}
 		itemMatrix
-	} else {stop('Only 2PL models currently supported.')}
+	
 }
-)
 
 coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	intercept = summary_chains(object,chains=chains,pars='intercept')[,1]
@@ -344,5 +351,7 @@ coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		lavMatrix <- cbind('int.lav' = lavIntercept, 'lam.lav' = lavLoading,'res.lav' = lavResidual)
 		itemMatrix <- cbind(itemMatrix, lavMatrix)
 	}
+	
+	itemMatrix
 	
 }
