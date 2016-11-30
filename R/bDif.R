@@ -264,11 +264,10 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #' @import ltm
 #' @import lavaan
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
-	if(object@model.type == '2PL'){
-		coef.2pl(object,chains,include,cut)
-	} else if(object@model.type == 'CFA'){
-		coef.cfa(object,chains,include,cut)
-	}
+	switch(object@model.type,
+		'2PL' = coef.2pl(object,chains,include,cut),
+		'CFA' = coef.cfa(object,chains,include,cut)
+	)
 }
 )
 
@@ -277,9 +276,6 @@ coef.2pl <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		diffs <- summary_chains(object,pars='diff',chains=chains)[,1]
 		difTable <- summaryDif(object,chains=chains)
 		deltaMatrix <- difTable[,c('Delta','pp>50%')]
-		## Non-dif model technique
-		#alpha_nondifs <- summary_chains(object,pars='alpha_nondif',chains=chains)[,1]
-		#diff_nondifs <- summary_chains(object,pars='diff_nondif',chains=chains)[,1]
 		
 		alphaMatrix <- matrix(alphas,byrow=TRUE,ncol=object@K)
 		colnames(alphaMatrix) <- paste0('alpha.',1:object@K)
@@ -289,16 +285,9 @@ coef.2pl <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		
 		if(!is.null(cut)){
 			difItems <- deltaMatrix[,'pp>50%'] >= cut
-			## If using non-dif formulation, uncomment.
-			#alphaMatrix[!difItems,] <- NA
-			#diffMatrix[!difItems,] <- NA
-			#alpha_nondifs[difItems] <- NA
-			#diff_nondifs[difItems] <- NA
 			alphaMatrix[!difItems,2:object@K] <- NA
 			diffMatrix[!difItems,2:object@K] <- NA
 		}
-		##If using non-dif formulation, uncomment
-		#itemMatrix <- cbind(alphaMatrix,'alpha..'=alpha_nondifs,diffMatrix,'diff..'=diff_nondifs,deltaMatrix)
 		itemMatrix <- cbind(alphaMatrix,diffMatrix,deltaMatrix)
 		rownames(itemMatrix) <- colnames(object@data)
 		
@@ -334,6 +323,13 @@ coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	#Delta matrix
 	deltaMatrix <- summaryDif(object,chains=chains)[,c('Delta','pp>50%')]
 	
+	if(!is.null(cut)){
+		difItems <- deltaMatrix[,'pp>50%'] >= cut
+		interceptMatrix[!difItems,2:object@K] <- NA
+		lambdaMatrix[!difItems,2:object@K] <- NA
+		residualMatrix[!difItems,2:object@K] <- NA
+	}
+	
 	itemMatrix <- cbind(interceptMatrix,lambdaMatrix,residualMatrix,deltaMatrix)
 	rownames(itemMatrix) <- colnames(object@data)
 	
@@ -349,6 +345,11 @@ coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		lavLoading <- lavTab[lavTab[,2] == '=~','est']
 		lavResidual <- lavTab[lavTab[,2] == '~~' & lavTab[,1] == lavTab[,3] & lavTab[,1] %in% varnames, 'est']
 		lavMatrix <- cbind('int.lav' = lavIntercept, 'lam.lav' = lavLoading,'res.lav' = lavResidual)
+		
+		if(!is.null(cut)){
+			lavMatrix[difItems,] <- NA
+		}
+		
 		itemMatrix <- cbind(itemMatrix, lavMatrix)
 	}
 	
