@@ -260,11 +260,21 @@ compareMethods <- function(object,chains=object@chain.max,groups=clusters(object
 #' Obtain item parameter estimates
 #' @inheritParams clusters,bDif-method
 #' @param include Logical. Whether to include estimates from ltm (model.type=2PL) or lavaan (model.type=CFA)
-#' @param cut Numeric between 0 and 1. If pp>50% is greater than this value, the non-DIF item parameters
+#' @param cut Numeric between 0 and 1. If pp>50\% is greater than this value, the non-DIF item parameters
 #'   are cut and the DIF item parameters retained. If lesser than this value, the opposite.
 #' @export
 #' @import ltm
 #' @import lavaan
+#' @return A matrix containing the relevant item parameter estimates:
+#' \describe{
+#' \item{Delta}{The mean posterior probability that the item exhibits DIF}
+#' \item{pp>50\%}{The posterior probability that Delta is greater than 50\%}
+#' \item{alpha.k}{The discrimination parameter for group k if DIF (model.type = '2PL')}
+#' \item{diff.k}{The difficulty parameter for group k if DIF (model.type = '2PL')}
+#' \item{int.k}{The intercept parameter for group k if DIF (model.type = 'CFA')}
+#' \item{lam.k}{The factor loading parameter for group k if DIF (model.type = 'CFA')}
+#' \item{res.k}{The residual variance for group k if DIF (model.type = 'CFA')}
+#' }
 setMethod('coef',signature = c(object='bDif'),function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 	switch(object@model.type,
 		'2PL' = coef.2pl(object,chains,include,cut),
