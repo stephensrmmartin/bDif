@@ -203,6 +203,51 @@ loo.bDif <- function(x){
 setGeneric('lp',def = function(object){standardGeneric('lp')})
 setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('lp__'))})
 
+#' Summarize bDif object
+#' 
+#' Summarize bDif object
+#' 
+#' Ultimately, this function is a convenience wrapper around \link[rstan]{summary,stanfit-method}.
+#' 
+#' @inheritParams clusters,bDif-method
+#' @param what Character string. Can be one of:
+#' \itemize{
+#' \item delta
+#' \item beta
+#' \item difficulty
+#' \item discrimination
+#' \item intercept
+#' \item loading
+#' \item residual
+#' }
+#' If NULL, specifying the parameters manually is recommended (e.g., pars = 'theta').
+setMethod('summary', signature = 'bDif', function(object, what = NULL, chains = NULL, ...){
+	if(is.null(what)){
+		if(is.null(chains)){
+			callNextMethod(object, ...)
+		} else{
+			summary_chains(object, chains = chains, ...)
+		}
+	}
+	
+	if(!is.null(what)){
+		switch(what,
+					 'delta' = pars <- c('delta_logit'),
+					 'beta' = pars <- c('betas_logit'),
+					 'difficulty' = pars <- 'diff',
+					 'discrimination' = pars <- 'alpha',
+					 'intercept' = pars <- 'intercept',
+					 'loading' = pars <- 'loading',
+					 'residual' = pars <- 'residual'
+					 )
+		if(is.null(chains)){
+			rstan::summary(object,pars=pars, ...)
+		} else {
+			summary_chains(object, chains = chains, pars=pars, ...)
+		}
+	}
+})
+
 #Beta summary
 summaryBetas <- function(bDif,chains=bDif@chain.max){
 	betasSum <- summary_chains(bDif,chains=chains,pars='betas_logit')
