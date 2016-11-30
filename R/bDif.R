@@ -58,24 +58,26 @@ bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model
 	
 	stan_data <- list(y=responseMatrix,covariates=covariateMatrix,K=K,jOrder=order,L=L,N=N,J=J)
 	
-	if(model.type == '2PL'){
-		pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
-		if(K == 2){
-			model <- stanmodels$dif2PLK2
-		} else {
-			model <- stanmodels$dif2PLK3
-		}
-	} else if (model.type == 'CFA'){
-		pars <- c('lambda','intercept','residual','delta_logit','pi_logit','theta','betas_logit','log_lik')
-		if(K == 2){
-			model <- stanmodels$difCFAK2
-		} else {
-			stop('K=2 only supported currently for CFA')
-			#model <- stanmodels$difCFAK3
-		}
-	} else {
-		stop('model.type must be one of 2PL or CFA')
-	}
+	switch(model.type,
+				 '2PL' = {
+						pars <- c('alpha','diff','delta_logit','pi_logit','theta','betas_logit','log_lik')
+						if(K == 2){
+							model <- stanmodels$dif2PLK2
+						} else {
+							model <- stanmodels$dif2PLK3
+						}
+			},
+				 'CFA' = {
+						pars <- c('lambda','intercept','residual','delta_logit','pi_logit','theta','betas_logit','log_lik')
+						if(K == 2){
+							model <- stanmodels$difCFAK2
+						} else {
+							stop('K=2 only supported currently for CFA')
+							#model <- stanmodels$difCFAK3
+						}
+		 },
+					stop('model.type must be one of 2PL or CFA')
+	)
 	
 	if(method=='mcmc'){
 		stanOut <- rstan::sampling(object = model,data = stan_data,pars=pars,...)
