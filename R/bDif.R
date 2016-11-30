@@ -208,6 +208,31 @@ setMethod('lp','bDif',function(object){rstan::get_posterior_mean(object,pars=c('
 #' Summarize bDif object
 #' 
 #' Ultimately, this function is a convenience wrapper around \link[rstan]{summary,stanfit-method}.
+#' For obtaining posterior mean estimates of item parameters, use \link{coef,bDif-method}.
+#' For obtaining posterior mean estimates of latent scores, use \link{factor.scores,bDif-method}.
+#' For obtaining posterior mean estimates of membership probabilities, use \link{clusters,bDif-method}, 
+#'   and for posterior probabilities, \link{posterior,bDif-method}.
+#'   
+#' One should use this summary function to examine the posterior distributions of the parameters of interest.
+#' One should also use this summary to assess chain convergence and to detect potential multimodality.
+#' Multimodality can occur for two reasons.
+#' First, latent mixture models frequently have a "label-switching" problem, wherein two modal solutions
+#' produce equivalent data likelihoods, with only the labels of the latent groups arbitrarily permuted.
+#' This is readily detectable in item parameter estimates for each group and in the betas.
+#' Should this be the only multimodality, one can simply determine which chains converged to similar modes,
+#' and use those chains in the summary or other bDif methods (\code{chains = c(2,3)}).
+#' 
+#' Second, multimodality could suggest that there truly exist multiple solutions to the model
+#' that are meaningfully different.
+#' This is observed when deltas or thetas do not converge across chains, as they are invariant to label switching.
+#' Should this occur, examine each chain carefully to better understand the various solutions.
+#' 
+#' By default, functions in bDif that take a \code{chains} argument will default to examining the chain
+#' with the highest log probability (\code{pars = 'lp__'}).
+#' Though not ideal, this decision was made to have a sane default in a model
+#' where label switching will occur between chains.
+#' Again, it is recommended to determine which chains converged, use those chains together for inference,
+#' and to examine whether divergent chains are divergent solely due to label switching.
 #' 
 #' @inheritParams clusters,bDif-method
 #' @param what Character string. Can be one of:
