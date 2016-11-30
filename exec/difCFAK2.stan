@@ -21,7 +21,7 @@ parameters {
 	vector[J-1] intercept_base[K];
 	ordered[K] intercept_ordered;
 	vector<lower=0>[J] lambda[K];
-	vector<lower=0>[J] residual[K];
+	vector<lower=0>[J] residual_s[K];
 	vector[J] delta_logit_s;
 	
 	//Person parameters
@@ -37,6 +37,7 @@ transformed parameters {
 	vector[J] intercept[K];
 	vector[J] delta_logit;
 	vector[N] pi_logit;
+	vector<lower=0>[J] residual[K];
 	
 	pi_logit = pi_logit_s + covariates * betas_logit;
 	
@@ -57,6 +58,10 @@ transformed parameters {
 		}
 	}
 	
+	for(k in 1:K){
+		residual[k] = residual_s[k] .* residual_s[k];
+	}
+	
 }
 
 model {
@@ -71,7 +76,7 @@ model {
 	for(k in 1:K){
 		intercept[k] ~ normal(0,1);
 		lambda[k] ~ normal(0,1);
-		residual[k] ~ cauchy(0,1);
+		residual_s[k] ~ cauchy(0,1);
 	}
 	delta_logit_s ~ logistic(0,1);
 	//Person priors
@@ -86,9 +91,9 @@ model {
 			for(k in 1:K){
 				yhat[j,n,k] = intercept[k,j] + lambda[k,j]*theta[n];
 			}
-			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
-			lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual[1,j]);
-			lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,2], residual[2,j]);
+			lp_jnd[j,n,1] = log_inv_logit(-delta_logit[j]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual_s[1,j]);
+			lp_jndk[j,n,1] = log_inv_logit(-pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,1], residual_s[1,j]);
+			lp_jndk[j,n,2] = log_inv_logit(pi_logit[n]) + normal_lpdf(y[n,j] | yhat[j,n,2], residual_s[2,j]);
 			lp_jnd[j,n,2] = log_inv_logit(delta_logit[j]) + log_sum_exp(lp_jndk[j,n]);
 			lp_jn[j,n] = log_sum_exp(lp_jnd[j,n]);
 		}
