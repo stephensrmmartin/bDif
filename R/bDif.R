@@ -343,11 +343,11 @@ coef.cfa <- function(object,chains=object@chain.max,include=TRUE,cut=NULL){
 		varnames <- names(d)
 		lavRHS <- paste(varnames,collapse = ' + ')
 		lavModel <- paste0('f1 =~ ', lavRHS)
-		lavOut <- cfa(data=d, model = lavModel, std.lv = TRUE)
+		lavOut <- cfa(data=d, model = lavModel, std.lv = TRUE, meanstructure = TRUE)
 		lavTab <- parameterEstimates(lavOut)
-		lavIntercept <- lavTab[lavTab[,2] == '~1','est']
+		lavIntercept <- lavTab[lavTab[,2] == '~1' & lavTab[,1] %in% varnames,'est']
 		lavLoading <- lavTab[lavTab[,2] == '=~','est']
-		lavResidual <- lavTab[lavTab[,2] == '~~' & lavTab[,1] == lavTab[,3], 'est']
+		lavResidual <- lavTab[lavTab[,2] == '~~' & lavTab[,1] == lavTab[,3] & lavTab[,1] %in% varnames, 'est']
 		lavMatrix <- cbind('int.lav' = lavIntercept, 'lam.lav' = lavLoading,'res.lav' = lavResidual)
 		itemMatrix <- cbind(itemMatrix, lavMatrix)
 	}
