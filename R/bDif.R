@@ -36,10 +36,10 @@ bDif <- setClass('bDif',contains = 'stanfit',slots = c('data','K','model.type','
 #' @export
 #' @return bDif S4 object. See \link{bDif}
 bDifFit <- function(data, measurementModel, K, order,covariateModel = ~ 1, model.type = '2PL',method = 'mcmc',...){
-	responseMatrix <- model.matrix(measurementModel,data)[,-1]
+	responseMatrix <- as.matrix(model.frame(measurementModel, data, na.action = 'na.pass'))[,-1]
 	responseMissing <- !complete.cases(responseMatrix)
 	
-	covariateMatrix <- model.matrix(covariateModel,data)
+	covariateMatrix <- as.matrix(model.frame(covariateModel, data, na.action = 'na.pass'))
 	covariateMissing <- !complete.cases(covariateMatrix)
 	
 	responseMatrix <- responseMatrix[!responseMissing & !covariateMissing,,drop=FALSE]
