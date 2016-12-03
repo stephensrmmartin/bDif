@@ -18,9 +18,12 @@ transformed data{
 
 parameters {
 	//Item parameters
-	vector[J-1] intercept_base[K];
-	ordered[K] intercept_ordered;
-	vector<lower=0>[J] lambda[K];
+	## change to 0 for non-DIF, since data are scaled?
+	vector[J] intercept[K];
+	//vector[J-1] intercept_base[K];
+	//ordered[K] intercept_ordered;
+	vector<lower=0>[J-1] lambda_base[K];
+	vector<lower=0>[K] lambda_ordered;
 	vector<lower=0>[J] residual_s[K];
 	vector[J] delta_logit_s;
 	
@@ -34,7 +37,8 @@ parameters {
 }
 
 transformed parameters {
-	vector[J] intercept[K];
+	//vector[J] intercept[K];
+	vector[J] lambda[K];
 	vector[J] delta_logit;
 	vector[N] pi_logit;
 	vector<lower=0>[J] residual[K];
@@ -45,7 +49,8 @@ transformed parameters {
 	
 	//Intercept matrix construction
 	for(k in 1:K){
-		intercept[k,jOrder] = intercept_ordered[k];
+//		intercept[k,jOrder] = intercept_ordered[k];
+		lambda[k,jOrder] = lambda_ordered[k];
 	}
 	{
 		int skip;
@@ -53,8 +58,8 @@ transformed parameters {
 		
 		for(j in 1:(J-1)){
 			if(j == jOrder){skip = skip + 1;}
-			intercept[1,j + skip] = intercept_base[1,j];
-			intercept[2,j + skip] = intercept_base[2,j];
+			lambda[1,j + skip] = lambda_base[1,j];
+			lambda[2,j + skip] = lambda_base[2,j];
 		}
 	}
 	
@@ -74,10 +79,12 @@ model {
 	
 	//Item priors
 	for(k in 1:K){
+		//intercept_base[k] ~ normal(0,1);
 		intercept[k] ~ normal(0,1);
-		lambda[k] ~ normal(0,1);
-		residual_s[k] ~ cauchy(0,1);
+		lambda_base[k] ~ lognormal(0,1);
+		residual_s[k] ~ normal(0,1);
 	}
+	lambda_ordered ~ lognormal(0,1);
 	delta_logit_s ~ logistic(0,1);
 	//Person priors
 	theta ~ normal(0,1);
